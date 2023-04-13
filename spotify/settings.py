@@ -11,7 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 from pathlib import Path
-from . import JWT_setting
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,9 +32,10 @@ ALLOWED_HOSTS = []
 # Application definition
 
 LOCAL_APPS = [
-    'spotify_app.authentication..apps.AuthenticationConfig',
+    'spotify_app.authentication.apps.AuthenticationConfig',
     'spotify_app.api.apps.ApiConfig',
     'spotify_app.users.apps.UsersConfig',
+    'spotify_app.common.apps.CommonConfig',
 ]
 
 THIRD_PARTY_APPS = [
@@ -137,6 +138,8 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+AUTH_USER_MODEL = 'users.BaseUser'
+
 # Rest Framework Settings
 
 REST_FRAMEWORK = {
@@ -144,3 +147,5 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     )
 }
+
+

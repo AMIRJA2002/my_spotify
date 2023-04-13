@@ -1,7 +1,5 @@
-# Django project settings.py
-from django.conf import settings
 from datetime import timedelta
-
+from django.conf import settings
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=500),

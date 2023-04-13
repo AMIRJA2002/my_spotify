@@ -5,13 +5,11 @@ from rest_framework import serializers
 
 from django.core.validators import MinLengthValidator
 from .validators import number_validator, special_char_validator, letter_validator
-from spotify.users.models import BaseUser , Profile
-from spotify.api.mixins import ApiAuthMixin
-from spotify.users.selectors import get_profile
-from spotify.users.services import register 
+from spotify_app.users.models import BaseUser , Profile
+from spotify_app.api.mixins import ApiAuthMixin
+from spotify_app.users.selectors import get_profile
+from spotify_app.users.services import register
 from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
-
-from drf_spectacular.utils import extend_schema
 
 
 class ProfileApi(ApiAuthMixin, APIView):
@@ -21,14 +19,12 @@ class ProfileApi(ApiAuthMixin, APIView):
             model = Profile 
             fields = ("bio", "posts_count", "subscriber_count", "subscription_count")
 
-    @extend_schema(responses=OutPutSerializer)
     def get(self, request):
         query = get_profile(user=request.user)
         return Response(self.OutPutSerializer(query, context={"request":request}).data)
 
 
 class RegisterApi(APIView):
-
 
     class InputRegisterSerializer(serializers.Serializer):
         email = serializers.EmailField(max_length=255)
@@ -56,7 +52,6 @@ class RegisterApi(APIView):
                 raise serializers.ValidationError("confirm password is not equal to password")
             return data
 
-
     class OutPutRegisterSerializer(serializers.ModelSerializer):
 
         token = serializers.SerializerMethodField("get_token")
@@ -77,7 +72,6 @@ class RegisterApi(APIView):
             return data
 
 
-    @extend_schema(request=InputRegisterSerializer, responses=OutPutRegisterSerializer)
     def post(self, request):
         serializer = self.InputRegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -39,7 +39,7 @@ class BaseUserManager(BUM):
 
 class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
 
-    email = models.EmailField(verbose_name = "email address",
+    email = models.EmailField(verbose_name="email address",
                               unique=True)
 
     is_active = models.BooleanField(default=True)
@@ -58,16 +58,7 @@ class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
 
 class Profile(models.Model):
     user = models.OneToOneField(BaseUser, on_delete=models.CASCADE)
-    posts_count = models.PositiveIntegerField(default=0)
-    subscriber_count = models.PositiveIntegerField(default=0)
-    subscription_count = models.PositiveIntegerField(default=0)
-    bio = models.CharField(max_length=1000, null=True, blank=True)
+    name = models.CharField(max_length=255)
 
     def __str__(self):
-        return f"{self.user} >> {self.bio}"
-
-
-
-
-
-
+        return f"{self.user} >> {self.name}"
