@@ -9,9 +9,10 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
-
+import os
 from pathlib import Path
 
+import spotify_app.playlist.apps
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -32,10 +33,13 @@ ALLOWED_HOSTS = []
 # Application definition
 
 LOCAL_APPS = [
-    'spotify_app.authentication.apps.AuthenticationConfig',
     'spotify_app.api.apps.ApiConfig',
     'spotify_app.users.apps.UsersConfig',
+    'spotify_app.music.apps.MusicConfig',
     'spotify_app.common.apps.CommonConfig',
+    'spotify_app.playlist.apps.PlaylistConfig',
+    'spotify_app.authentication.apps.AuthenticationConfig',
+
 ]
 
 THIRD_PARTY_APPS = [
@@ -131,6 +135,16 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
+
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static')
+    ]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

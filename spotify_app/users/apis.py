@@ -1,90 +1,64 @@
-from rest_framework import status
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.tokens import RefreshToken
+from .selectors import check_for_existing_user, get_user
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import serializers
+from .services import create_new_user
+from django.db import transaction
 
-from django.core.validators import MinLengthValidator
-from .validators import number_validator, special_char_validator, letter_validator
-from spotify_app.users.models import BaseUser , Profile
-from spotify_app.api.mixins import ApiAuthMixin
-from spotify_app.users.selectors import get_profile
-from spotify_app.users.services import register
-from rest_framework_simplejwt.tokens import AccessToken, RefreshToken
+User = get_user_model()
 
 
-class ProfileApi(ApiAuthMixin, APIView):
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
 
-    class OutPutSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Profile 
-            fields = ("bio", "posts_count", "subscriber_count", "subscription_count")
-
-    def get(self, request):
-        query = get_profile(user=request.user)
-        return Response(self.OutPutSerializer(query, context={"request":request}).data)
+    tokens = {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+    return tokens
 
 
-class RegisterApi(APIView):
+class UserSignUpApi(APIView):
 
-    class InputRegisterSerializer(serializers.Serializer):
-        email = serializers.EmailField(max_length=255)
-        bio = serializers.CharField(max_length=1000, required=False)
-        password = serializers.CharField(
-                validators=[
-                        number_validator,
-                        letter_validator,
-                        special_char_validator,
-                        MinLengthValidator(limit_value=10)
-                    ]
-                )
-        confirm_password = serializers.CharField(max_length=255)
-        
+    class InputSerializer(serializers.Serializer):
+        name = serializers.CharField(max_length=200)
+        email = serializers.EmailField()
+        password = serializers.CharField()
+
         def validate_email(self, email):
-            if BaseUser.objects.filter(email=email).exists():
-                raise serializers.ValidationError("email Already Taken")
+            if check_for_existing_user(email):
+                raise serializers.ValidationError("email already exist")
             return email
 
-        def validate(self, data):
-            if not data.get("password") or not data.get("confirm_password"):
-                raise serializers.ValidationError("Please fill password and confirm password")
-            
-            if data.get("password") != data.get("confirm_password"):
-                raise serializers.ValidationError("confirm password is not equal to password")
-            return data
+    @transaction.atomic()
+    def post(self, reqeust):
+        serializer = self.InputSerializer(data=reqeust.data)
+        serializer.is_valid(raise_exception=True)
+        new_user = create_new_user(serializer.validated_data)
+        tokens = get_tokens_for_user(new_user)
+        return Response({'message': 'user created', 'tokens': tokens})
 
-    class OutPutRegisterSerializer(serializers.ModelSerializer):
 
-        token = serializers.SerializerMethodField("get_token")
+class UserLoginApi(APIView):
 
-        class Meta:
-            model = BaseUser 
-            fields = ("email", "token", "created_at", "updated_at")
-
-        def get_token(self, user):
-            data = dict()
-            token_class = RefreshToken
-
-            refresh = token_class.for_user(user)
-
-            data["refresh"] = str(refresh)
-            data["access"] = str(refresh.access_token)
-
-            return data
-
+    class InputSerializer(serializers.Serializer):
+        email = serializers.EmailField()
+        password = serializers.CharField()
 
     def post(self, request):
-        serializer = self.InputRegisterSerializer(data=request.data)
+        serializer = self.InputSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        try:
-            user = register(
-                    email=serializer.validated_data.get("email"),
-                    password=serializer.validated_data.get("password"),
-                    bio=serializer.validated_data.get("bio"),
-                    )
-        except Exception as ex:
-            return Response(
-                    f"Database Error {ex}",
-                    status=status.HTTP_400_BAD_REQUEST
-                    )
-        return Response(self.OutPutRegisterSerializer(user, context={"request":request}).data)
 
+        try:
+            email = serializer.validated_data.get('email')
+            password = serializer.validated_data.get('password')
+            user = get_user(email)
+            if check_password(password, user.password):
+                return Response({'tokens': get_tokens_for_user(user)})
+            raise AuthenticationFailed('wrong username or password')
+        except:
+            raise AuthenticationFailed('wrong username or password')

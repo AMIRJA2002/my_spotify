@@ -1,4 +1,13 @@
-from .models import Profile, BaseUser
+from django.contrib.auth import get_user_model
 
-def get_profile(user:BaseUser) -> Profile:
-    return Profile.objects.get(user=user)
+User = get_user_model()
+
+
+def check_for_existing_user(value: str):
+    if User.objects.filter(email=value).exists():
+        return True
+    return False
+
+
+def get_user(email):
+    return User.objects.get(email=email)

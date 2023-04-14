@@ -9,6 +9,8 @@ from rest_framework.views import APIView
 from rest_framework import serializers
 from django.db import transaction
 
+from ..users.models import BaseUser
+
 User = get_user_model()
 
 
@@ -29,17 +31,16 @@ class UserSignUpApi(APIView):
         email = serializers.EmailField()
         password = serializers.CharField()
 
-        def validate_email(self, value):
-            if check_for_existing_user(value):
+        def validate_email(self, email):
+            if check_for_existing_user(email):
                 raise serializers.ValidationError("email already exist")
-            return value
+            return email
 
     @transaction.atomic()
     def post(self, reqeust):
         serializer = self.InputSerializer(data=reqeust.data)
         serializer.is_valid(raise_exception=True)
         new_user = create_new_user(serializer.validated_data)
-        create_profile(serializer.validated_data, new_user)
         tokens = get_tokens_for_user(new_user)
         new_user.save()
         return Response({'message': 'user created', 'tokens': tokens})

@@ -1,6 +1,5 @@
 from django.db import models
 from spotify_app.common.models import BaseModel
-
 from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager as BUM
 from django.contrib.auth.models import PermissionsMixin

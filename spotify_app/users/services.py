@@ -1,18 +1,17 @@
-from django.db import transaction 
-from .models import BaseUser, Profile
+from django.contrib.auth import get_user_model
+from spotify_app.users.models import Profile
+
+User = get_user_model()
 
 
-def create_profile(*, user:BaseUser, bio:str | None) -> Profile:
-    return Profile.objects.create(user=user, bio=bio)
-
-def create_user(*, email:str, password:str) -> BaseUser:
-    return BaseUser.objects.create_user(email=email, password=password)
+def create_profile(name, user):
+    Profile.objects.create(name=name, user=user)
 
 
-@transaction.atomic
-def register(*, bio:str|None, email:str, password:str) -> BaseUser:
-
-    user = create_user(email=email, password=password)
-    create_profile(user=user, bio=bio)
-
+def create_new_user(data):
+    name = data.get('name')
+    email = data.get('email')
+    password = data.get('password')
+    user = User.objects.create_user(email=email, password=password)
+    create_profile(name, user)
     return user

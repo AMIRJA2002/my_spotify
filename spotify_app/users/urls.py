@@ -1,8 +1,8 @@
 from django.urls import path
-from .apis import ProfileApi, RegisterApi
+from . import apis
 
 
 urlpatterns = [
-    path('register/', RegisterApi.as_view(), name="register"),
-    path('profile/', ProfileApi.as_view(), name="profile"),
+    path('signup/', apis.UserSignUpApi.as_view(), name='signup'),
+    path('login/', apis.UserLoginApi.as_view(), name='login'),
 ]
