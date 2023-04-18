@@ -1,4 +1,4 @@
-from .models import Album, Music
+from .models import Album, MusicUpload
 from datetime import timedelta
 import mutagen
 
@@ -14,29 +14,41 @@ def create_album(data, user):
     return new_album
 
 
-def add_music(data):
-    singer = data.get('singer')
-    album = data.get('album')
+def add_music(data, request):
+    albums = data.get('album')
     cover = data.get('cover')
     name = data.get('name')
-    release_date = data.get('release_date')
-    music = data.get('music')
+    release_data = data.get('release_data')
+    song = data.get('song')
 
-    new_music = Music.objects.create(
-        singer=singer,
-        album=album,
+    new_music = MusicUpload.objects.create(
+        singer=request.user,
         cover=cover,
         name=name,
-        release_date=release_date,
-        music=music
+        release_data=release_data,
+        song=song,
     )
+    new_music.album.set(albums)
+    duration = set_music_duration(new_music)
+    new_music.duration = duration
+    incrace_album_song_number(albums)
+    new_music.save()
     return new_music
 
 
+def incrace_album_song_number(albums):
+    album_ids = [album.id for album in albums]
+    albums = Album.objects.filter(id__in=album_ids)
+
+    for album in albums:
+        album.songs_number += 1
+        album.save()
+
+
 def set_music_duration(music_instance):
-    file_path = music_instance.music.path
+    file_path = music_instance.song.path
     music = mutagen.File(file_path)
     duration = music.info.length
     minutes, seconds = divmod(duration, 60)
-    print(duration, 400 * '*')
-    music_instance.minutes = timedelta(minutes=minutes, seconds=seconds)
+    duration = timedelta(minutes=minutes, seconds=seconds)
+    return duration

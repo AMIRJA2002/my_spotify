@@ -16,16 +16,21 @@ class Album(BaseModel):
         return str(self.singer)
 
 
-class Music(BaseModel):
-    singer = models.ForeignKey(User, related_name='Musics', on_delete=models.DO_NOTHING)
-    album = models.ForeignKey(Album, related_name='Musics', on_delete=models.DO_NOTHING, blank=True, null=True)
-    cover = models.ImageField(upload_to='musics/cover/', blank=True, null=True)
-    name = models.CharField(max_length=333)
-    release_date = models.DateField(auto_now_add=False)
-    number_heard = models.BigIntegerField(default=0)
-    minutes = models.DurationField(null=True, blank=True)
-    music = models.FileField(upload_to='musics/')
+class MusicUpload(BaseModel):
+    singer = models.ForeignKey(User, related_name='user_songs', on_delete=models.DO_NOTHING)
+    name = models.CharField(max_length=200)
+    cover = models.ImageField(upload_to='musics/cover/')
+    release_data = models.DateField(auto_now_add=False)
+    play_count = models.BigIntegerField(default=0)
+    duration = models.DurationField(null=True, blank=True)
+    song = models.FileField(upload_to='musics/')
     like_count = models.BigIntegerField(default=0)
+    album = models.ManyToManyField(Album, related_name='musics')
+
+
+class SongFit(models.Model):
+    song = models.ForeignKey(MusicUpload, related_name='song_feats', on_delete=models.CASCADE)
+    singer = models.ForeignKey(User, related_name='song_feats', on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.name}, f{self.singer}"
+        return f'{self.song.name} fit {str(self.singer)}'

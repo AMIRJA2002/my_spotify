@@ -1,8 +1,6 @@
+from .models import PlayList, AddSongAndDateAdded
+from spotify_app.music.models import MusicUpload
 from django.shortcuts import get_object_or_404
-
-from .models import PlayList
-from rest_framework import status
-from rest_framework.response import Response
 
 
 def create_new_playlist(user):
@@ -35,3 +33,41 @@ def delete_playlist(user, playlist_id):
         play_list.delete()
     else:
         pass
+
+
+def add_to_playlist(data):
+    playlist_id = data.get('playlist')
+    song_id = data.get('song')
+    playlist = PlayList.objects.get(id=playlist_id)
+    song = MusicUpload.objects.get(id=song_id)
+
+    try:
+        new_playlist_song = AddSongAndDateAdded.objects.create(song=song, playlist=playlist)
+    except:
+        return False
+
+    playlist.song_number += 1
+    if playlist.duration is None:
+        playlist.duration = song.duration
+    else:
+        playlist.duration += song.duration
+    playlist.save()
+
+    return new_playlist_song
+
+
+def remove_to_playlist(data):
+    playlist_id = data.get('playlist')
+    song_id = data.get('song')
+    playlist = PlayList.objects.get(id=playlist_id)
+    song = MusicUpload.objects.get(id=song_id)
+
+    try:
+        AddSongAndDateAdded.objects.get(song=song, playlist=playlist).delete()
+    except:
+        return False
+
+    playlist.song_number -= 1
+    playlist.save()
+
+    return True
