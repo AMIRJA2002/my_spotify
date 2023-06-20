@@ -1,11 +1,11 @@
+from .selectors import check_for_existing_user, get_user, get_all_artists
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.tokens import RefreshToken
-from .selectors import check_for_existing_user, get_user
 from django.contrib.auth.hashers import check_password
+from rest_framework import serializers, status
 from django.contrib.auth import get_user_model
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework import serializers
 from .services import create_new_user
 from django.db import transaction
 
@@ -62,3 +62,17 @@ class UserLoginApi(APIView):
             raise AuthenticationFailed('wrong username or password')
         except:
             raise AuthenticationFailed('wrong username or password')
+
+
+class Artist(APIView):
+
+    class OutputSerializer(serializers.ModelSerializer):
+        class Meta:
+            model = User
+            fields = "__all__"
+
+    def get(self, request):
+        artists = get_all_artists()
+        return Response(self.OutputSerializer(instance=artists, many=True).data, status=status.HTTP_200_OK)
+
+

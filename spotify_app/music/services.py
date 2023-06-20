@@ -1,4 +1,6 @@
-from .models import Album, MusicUpload
+from django.shortcuts import get_object_or_404
+
+from .models import Album, MusicUpload, SingerProfile, TopTenSongForArtist
 from datetime import timedelta
 import mutagen
 
@@ -52,3 +54,19 @@ def set_music_duration(music_instance):
     minutes, seconds = divmod(duration, 60)
     duration = timedelta(minutes=minutes, seconds=seconds)
     return duration
+
+
+def create_artist_profile(request, data):
+    artist_profile = SingerProfile.objects.create(
+        singer=request.user, name=data.validated_data['name'], image=data.validated_data['image']
+    )
+    return artist_profile
+
+
+def create_top_ten_list(request, data):
+    return TopTenSongForArtist.objects.create(profile=request.user.singer_profile, music=data.validated_data['music'])
+
+
+def delete_music_from_top_ten(request, id):
+    music = get_object_or_404(TopTenSongForArtist, profile__singer=request.user, id=id)
+    music.delete()

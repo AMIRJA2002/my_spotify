@@ -22,9 +22,11 @@ class PlayList(BaseModel):
 
 
 class AddSongAndDateAdded(models.Model):
-    song = models.OneToOneField(MusicUpload, related_name='date_added', on_delete=models.CASCADE)
+    song = models.OneToOneField(MusicUpload, related_name='songs', on_delete=models.CASCADE)
     playlist = models.ForeignKey(PlayList, related_name='date_added', on_delete=models.CASCADE)
     date_added = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f"{str(self.date_added)}"
+
+

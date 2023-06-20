@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from spotify_app.users.models import Profile
+from spotify_app.users.models import Profile, ArtistProfile
 
 User = get_user_model()
 
@@ -15,3 +15,4 @@ def create_new_user(data):
     user = User.objects.create_user(email=email, password=password)
     create_profile(name, user)
     return user
+

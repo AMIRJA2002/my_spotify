@@ -1,8 +1,8 @@
-from django.db import models
-from spotify_app.common.models import BaseModel
-from django.contrib.auth.models import AbstractBaseUser
 from django.contrib.auth.models import BaseUserManager as BUM
 from django.contrib.auth.models import PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser
+from spotify_app.common.models import BaseModel
+from django.db import models
 
 
 class BaseUserManager(BUM):
@@ -38,8 +38,15 @@ class BaseUserManager(BUM):
 
 class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
 
-    email = models.EmailField(verbose_name="email address",
-                              unique=True)
+    ARTIST = 0
+    NORMAL_USER = 1
+    roll_choices = (
+        (ARTIST, 'خواننده'),
+        (NORMAL_USER, 'کاربر عادی'),
+    )
+    roll = models.SmallIntegerField(choices=roll_choices, default=NORMAL_USER)
+
+    email = models.EmailField(verbose_name="email address", unique=True)
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
@@ -61,3 +68,12 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user} >> {self.name}"
+
+
+class ArtistProfile(models.Model):
+    artist = models.OneToOneField(BaseUser, on_delete=models.CASCADE)
+    name = models.CharField(max_length=300)
+    cover = models.ImageField(upload_to='artist-cover/', null=True, blank=True),
+
+    def __str__(self):
+        return f'{self.name}, {self.artist.name}'

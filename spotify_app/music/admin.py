@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Album, MusicUpload
+from .models import Album, MusicUpload, TopTenSongForArtist
 
 
 class SongInline(admin.TabularInline):
@@ -18,4 +18,9 @@ class AlbumAdmin(admin.ModelAdmin):
 
 @admin.register(MusicUpload)
 class MusicUploadAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'release_data', 'play_count', 'duration')
+    list_display = ('id', 'name', 'release_data', 'play_count', 'duration', 'genre', 'happy_or_sad')
+
+
+@admin.register(TopTenSongForArtist)
+class ArtistProfileAdmin(admin.ModelAdmin):
+    list_display = ('id', 'music', 'profile')

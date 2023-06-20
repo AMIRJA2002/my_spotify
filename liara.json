@@ -1,0 +1,9 @@
+{
+  "app": "spotimine",
+  "disks": [
+    {
+      "name": "disk",
+      "mountTo": "media"
+    }
+  ]
+}

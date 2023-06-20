@@ -1,12 +1,13 @@
-from django.contrib import admin
-from django import forms
-from django.contrib import admin
-from django.contrib.auth.models import Group
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.forms import ReadOnlyPasswordHashField
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.contrib import admin
+from django.contrib import admin
 from .models import Profile
+from django import forms
+
 MyUser = get_user_model()
 
 
@@ -80,13 +81,15 @@ class UserAdmin(BaseUserAdmin):
     ]
     search_fields = ["email"]
     ordering = ["email"]
+
     filter_horizontal = []
 
 
-# Now register the new UserAdmin...
-admin.site.register(MyUser, UserAdmin)
-# ... and, since we're not using Django's built-in permissions,
-# unregister the Group model from admin.
+@admin.register(MyUser)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('id', 'email', 'roll')
+
+
 admin.site.unregister(Group)
 
 

@@ -56,7 +56,7 @@ def add_to_playlist(data):
     return new_playlist_song
 
 
-def remove_to_playlist(data):
+def remove_from_playlist(data):
     playlist_id = data.get('playlist')
     song_id = data.get('song')
     playlist = PlayList.objects.get(id=playlist_id)
@@ -68,6 +68,10 @@ def remove_to_playlist(data):
         return False
 
     playlist.song_number -= 1
+    if playlist.duration is None:
+        pass
+    elif playlist.duration is not None:
+        playlist.duration -= song.duration
     playlist.save()
 
     return True
